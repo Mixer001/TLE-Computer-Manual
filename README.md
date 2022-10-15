@@ -89,16 +89,51 @@ One more thing: the command index is written in reverse (00001 is 16, 10000 is 1
 | 0001 | 0000 | GGGGG | 0000000 |
 
 > Executing *00010000000000000000* will restart the program by setting the counter to 0.
+> 
+> Creating a *goto* command pointing to itself will stop the program (cannot be undone).
 
 ---
 
 #### If
-if
+The key to more complex programs, is usually used together with *goto*. It looks for inequality between two numbers and **skips the next command** if A > B.
+Has 3 variants analogous to subtraction.
+
+1. Both A and B are read from the main memory.
+
+| Command | Is A const | Index A | unused | Index B | Is B const | unused |
+| ---- | --- | --- | ----- | --- | --- | --- |
+| 0010 |  0  | AAA | 00000 | BBB |  0  | 000 |
+
+2. A is read from the memory while B is defined in the command.
+
+| Command | Is A const | Index A | Number B | Is B const | unused |
+| ---- | --- | --- | -------- | --- | --- |
+| 0010 |  0  | AAA | BBBBBBBB |  1  | 000 |
+
+3. Similar to *variant 2* but this time A is a constant and B comes from the memory.
+
+| Command | Is A const | Number A | Index B | Is B const | unused |
+| ---- | --- | -------- | --- | --- | --- |
+| 0010 |  1  | AAAAAAAA | BBB |  0  | 000 |
+
+> This example shows how to build an *if else* function
+> ```
+> 1    if A > B
+> 2    goto 7
+> 3    ...
+> 4    code to execute if A > B
+> 5    ...
+> 6    goto 10
+> 7    ...
+> 8    code to execute if A <= B
+> 9    ...
+> 10   rest of the code
+> ```
 
 ---
 
 #### Copy
-copy
+There is no special function to copy a number.
 
 ---
 
