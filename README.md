@@ -1,4 +1,4 @@
-# TLE-Computer-Manual
+# TLE Computer Manual
 An instruction manual for my computer built in The Life Engine - an online evolution and ecosystem simulator. It is an 8-bit system with
 outstanding **80 Bytes** of program memory, **8 Byte** hard drive and a binary display that can show you any number from 0 to 255 !
 
@@ -26,6 +26,7 @@ so writing a number to 111 is the way to display it.
 - [Go to](#goto)
 - [Copy](#copy)
 - [Write](#write)
+- [Mix'n'match](#mix'n'match)
 
 ---
 
@@ -35,19 +36,19 @@ The most basic operation. It comes in 3 variants, 2 of which are interchangeable
 1. Reads numbers A and B from the memory, performs addition and writes the result to a specified memory slot.
 
 | Command | Is A const | Index A | unused | Index B | Is B const | Out |
-| ---- | --- | --- | ----- | --- | --- | --- |
+| ---: | --- | --- | ----- | --- | --- | --- |
 | 0100 |  0  | AAA | 00000 | BBB |  0  | OOO |
 
 2. Reads number A from the memory and B from the command, adds them together and writes the result to a spacified memory slot.
 
 | Command | Is A const | Index A | Number B | Is B const | Out |
-| ---- | --- | --- | -------- | --- | --- |
+| ---: | --- | --- | -------- | --- | --- |
 | 0100 |  0  | AAA | BBBBBBBB |  1  | OOO |
 
 3. Similar to *variant 2* but this time A is a constant and B comes from the memory.
 
 | Command | Is A const | Number A | Index B | Is B const | Out |
-| ---- | --- | -------- | --- | --- | --- |
+| ---: | --- | -------- | --- | --- | --- |
 | 0100 |  1  | AAAAAAAA | BBB |  0  | OOO |
 
 Keep in mind, that if the result exceeds 255 it will overflow and "wrap around", returning A + B - 256 instead.
@@ -60,19 +61,19 @@ I don't think it needs explanation. Just like addition, has 3 variants.
 1. Reads numbers A and B from the memory, subtracts B from A and writes the result to a specified memory slot.
 
 | Command | Is A const | Index A | unused | Index B | Is B const | Out |
-| ---- | --- | --- | ----- | --- | --- | --- |
+| ---: | --- | --- | ----- | --- | --- | --- |
 | 1100 |  0  | AAA | 00000 | BBB |  0  | OOO |
 
 2. Reads number A from the memory and B from the command, subtracts B from A and writes the result to a spacified memory slot.
 
 | Command | Is A const | Index A | Number B | Is B const | Out |
-| ---- | --- | --- | -------- | --- | --- |
+| ---: | --- | --- | -------- | --- | --- |
 | 1100 |  0  | AAA | BBBBBBBB |  1  | OOO |
 
 3. Similar to *variant 2* but this time A is a constant and B comes from the memory.
 
 | Command | Is A const | Number A | Index B | Is B const | Out |
-| ---- | --- | -------- | --- | --- | --- |
+| ---: | --- | -------- | --- | --- | --- |
 | 1100 |  1  | AAAAAAAA | BBB |  0  | OOO |
 
 Negative results are not possible and they will overflow, returning 256 - A + B instead.
@@ -85,7 +86,7 @@ A really handy command that gives more control over the program. After this comm
 One more thing: the command index is written in reverse (00001 is 16, 10000 is 1). It is a unique feature designed to strenghten the minds of programmers.
 
 | Command | unused | Go to (reversed)| unused |
-| ---- | ---- | ----- | ------- |
+| ---: | ---- | ----- | ------- |
 | 0001 | 0000 | GGGGG | 0000000 |
 
 > Executing *00010000000000000000* will restart the program by setting the counter to 0.
@@ -101,43 +102,89 @@ Has 3 variants analogous to subtraction.
 1. Both A and B are read from the main memory.
 
 | Command | Is A const | Index A | unused | Index B | Is B const | unused |
-| ---- | --- | --- | ----- | --- | --- | --- |
+| ---: | --- | --- | ----- | --- | --- | --- |
 | 0010 |  0  | AAA | 00000 | BBB |  0  | 000 |
 
 2. A is read from the memory while B is defined in the command.
 
 | Command | Is A const | Index A | Number B | Is B const | unused |
-| ---- | --- | --- | -------- | --- | --- |
+| ---: | --- | --- | -------- | --- | --- |
 | 0010 |  0  | AAA | BBBBBBBB |  1  | 000 |
 
 3. Similar to *variant 2* but this time A is a constant and B comes from the memory.
 
 | Command | Is A const | Number A | Index B | Is B const | unused |
-| ---- | --- | -------- | --- | --- | --- |
+| ---: | --- | -------- | --- | --- | --- |
 | 0010 |  1  | AAAAAAAA | BBB |  0  | 000 |
 
 > This example shows how to build an *if else* function
 > ```
 > 1    if A > B
 > 2    goto 7
-> 3    ...
-> 4    code to execute if A > B
-> 5    ...
+> 3     ...
+> 4     code to execute if A > B
+> 5     ...
 > 6    goto 10
-> 7    ...
-> 8    code to execute if A <= B
-> 9    ...
+> 7     ...
+> 8     code to execute if A <= B
+> 9     ...
 > 10   rest of the code
 > ```
 
 ---
 
 #### Copy
-There is no special function to copy a number.
+There is no special function to copy a number but it is possible with just one line of code and a bit of ingenuity. The simplest method is to use
+addition with zero.
+
+| Command | - | From | Zero | - | To |
+| ---: | --- | --- | -------- | --- | --- |
+| 0100 |  0  | FFF | 00000000 |  1  | TTT |
 
 ---
 
 #### Write
-write
+Writing a predefined number into the memory is the trickiest task so far. My method relies on addition and requires that at least one index
+has the value 0.
+
+| Command | - | Zero | Number | - | To |
+| ---: | --- | --- | -------- | --- | --- |
+| 0100 |  0  | ZZZ | NNNNNNNN |  1  | TTT |
+
+Notice that the 3 *zero* bits are not necessarily *000*. It is a pointer to the value *00000000* anywhere in memory.
+Should there be no zeroes available it is still possible to reset any variable using the command below.
+
+| Command | - | Zeroes | - | Var to reset |
+| ---: | --- | ----------- | --- | --- |
+| 0100 |  1  | 00000000000 |  1  | RRR |
+
+Numbers smaller than 8 can be written without using an empty variable.
+
+| Command | - | Zeroes | Number | - | To |
+| ---: | --- | -------- | --- | --- | --- |
+| 0100 |  1  | 00000000 | NNN |  1  | TTT |
 
 ---
+
+#### Mix'n'match
+*Use at your own risk*
+
+*F+-* is flexible. There is no debugger telling you what to do, no error messages, and no risk of breaking something important. It is easy to notice,
+that many commands have unused bits, wasting that precious memory. Technically it should be possible to overlap two commands for efficiency.
+
+> Addition + Goto
+> | Command | - | Index A | Go to (reversed) | Index B | - | Out |
+> | ---: | --- | --- | ----- | --- | --- | --- |
+> | 0101 |  0  | AAA | GGGGG | BBB |  0  | OOO |
+> 
+> Numbers A nad B are added together and the result is written to memory. Then the program counter is set to a specified value.
+
+---
+
+## Possible future content
+- [x] Document every command
+- [ ] Add code examples
+- [ ] Add in-depth explanation of the computer
+
+---
+*Made by Mixer001*
