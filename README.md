@@ -173,6 +173,7 @@ Numbers smaller than 8 can be written without using an empty variable.
 that many commands have unused bits, wasting that precious memory. Technically it should be possible to overlap two commands for efficiency.
 
 > Addition + Goto
+> 
 > | Command | - | Index A | Go to (reversed) | Index B | - | Out |
 > | ---: | --- | --- | ----- | --- | --- | --- |
 > | 0101 |  0  | AAA | GGGGG | BBB |  0  | OOO |
