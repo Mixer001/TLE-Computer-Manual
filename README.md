@@ -144,7 +144,7 @@ addition with zero.
 ---
 
 #### Write
-Writing a predefined number into the memory is the trickiest task so far. My method relies on addition and requires that at least one index
+Writing a predefined number into the memory is the trickiest task so far. The simplest method relies on addition and requires that at least one index
 has the value 0.
 
 | Command | - | Zero | Number | - | To |
@@ -152,17 +152,36 @@ has the value 0.
 | 0100 |  0  | ZZZ | NNNNNNNN |  1  | TTT |
 
 Notice that the 3 *zero* bits are not necessarily *000*. It is a pointer to the value *00000000* anywhere in memory.
-Should there be no zeroes available it is still possible to reset any variable using the command below.
+Even with no zeroes available, it is still possible to write any value in one command, but finding the right combination of bits can be a problem.
+Luckily [Elias](https://replit.com/@pyelias), member of the TLE community, has created an algorithm that creates the command authomatically:
+
+``` python
+# python code by @pyelias
+# see their replit for a fully commented version
+
+def gen_const(n):
+    b = n * 25 % 32
+    curr_out = b * 9 % 256 # this = n mod 32
+    
+    diff = (n - curr_out) % 256 # this is a multiple of 32
+    assert(diff % 32 == 0)      # ^ make sure that's true
+    
+    a = diff // 32
+    return a, b
+
+n = int(input("what constant to write? ")) % 256
+a, b = gen_const(n)
+print("use this instruction:")
+print(f"0100 1 {a:03b} {b:05b} 000 1 out")
+```
+
+It is possible to reset any variable using the command below.
 
 | Command | - | Zeroes | - | Var to reset |
 | ---: | --- | ----------- | --- | --- |
 | 0100 |  1  | 00000000000 |  1  | RRR |
 
-Numbers smaller than 8 can be written without using an empty variable.
 
-| Command | - | Zeroes | Number | - | To |
-| ---: | --- | -------- | --- | --- | --- |
-| 0100 |  1  | 00000000 | NNN |  1  | TTT |
 
 ---
 
